@@ -35,6 +35,25 @@ def test_clean_navigation_run_preserved(tmp_path,monkeypatch):
         assert rid in html
     assert c.get('/api/export/'+rid).status_code==200
 
+def test_reweigh_flow_http(tmp_path,monkeypatch):
+    c=client(tmp_path,monkeypatch)
+    run=c.post('/api/runs',json={'dataset':'reweigh'}).json()
+    rid=run['manifest']['run_id']
+    assert run['counts']['reweigh_adopted']==4
+    # 重跑幂等：同一输入不新增批次、不新增票、不重复补款
+    again=c.post('/api/runs',json={'dataset':'reweigh'}).json()
+    assert again['manifest']['run_id']==rid
+    assert len(c.get('/api/runs').json())==1
+    assert again['reweighs']==run['reweighs']
+    # 页面可核对沿用皮重、成交依据与补秤前后差额
+    html=c.get('/reweigh?run_id='+rid).text
+    assert '沿用票01001版本1皮重' in html
+    assert '1051.65' in html and '1168.50' in html and '116.85' in html
+    assert 'REWEIGH_NO_ORIGINAL' in html
+    # 阻断项不进入可付款结果
+    assert run['balance']['blocked']==7
+    assert c.get('/api/export/'+rid).status_code==200
+
 def test_custom_csv_snapshot_and_navigation(tmp_path,monkeypatch):
     from app.config import ROOT
     c=client(tmp_path,monkeypatch)

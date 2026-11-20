@@ -3,12 +3,16 @@ from app.coerce import money
 
 def balance(state):
     c=state['counts'];accepted=len(state['records']);quarantined=len(state['quarantine'])
-    explained=accepted+quarantined+c['blank']+c['duplicate']+c['repeated_header']
+    reweigh_duplicate=c.get('reweigh_duplicate',0)
+    reweigh_adopted=c.get('reweigh_adopted',0)
+    explained=accepted+quarantined+c['blank']+c['duplicate']+c['repeated_header']+reweigh_duplicate+reweigh_adopted
     total=sum((Decimal(r['amount']) for r in state['final']),Decimal(0))
     paid=sum((Decimal(r['paid']) for r in state['final']),Decimal(0));due=sum((Decimal(r['due']) for r in state['final']),Decimal(0))
     return {'input':c['input'],'accepted':accepted,'quarantined':quarantined,'blank':c['blank'],'duplicate':c['duplicate'],
-      'repeated_header':c['repeated_header'],'row_balanced':explained==c['input'],'amount':money(total),'paid':money(paid),'due':money(due),
-      'money_balanced':total==paid+due,'blocked':len(state['version_conflicts'])}
+      'repeated_header':c['repeated_header'],'reweigh_adopted':reweigh_adopted,'reweigh_duplicate':reweigh_duplicate,
+      'row_balanced':explained==c['input'],'amount':money(total),'paid':money(paid),'due':money(due),
+      'money_balanced':total==paid+due,
+      'blocked':len(state['version_conflicts'])+len([q for q in state['quarantine'] if q['code'].startswith('REWEIGH')])}
 
 def apply(state):
     state['balance']=balance(state)

@@ -4,6 +4,9 @@ REASONS = {
     'BAD_UNIT':'单位不受支持', 'UNKNOWN_REFERENCE':'引用对象不存在', 'INVALID_RANGE':'范围错误',
     'VERSION_CONFLICT':'版本冲突', 'EMPTY_FILE':'空文件', 'BLANK_FILE':'全空行',
     'HEADER_ONLY':'仅有表头', 'STALE_VERSION':'复核版本已更新', 'NOT_FOUND':'批次不存在',
+    'REWEIGH_NO_ORIGINAL':'补秤缺少对应原票', 'REWEIGH_FISH_MISMATCH':'补秤品类与原票不一致',
+    'REWEIGH_DEAL_MISMATCH':'补秤成交依据与原票不一致', 'REWEIGH_NEGATIVE_NET':'沿用皮重后净重为负',
+    'REWEIGH_DUPLICATE':'同一补秤重复且新毛重冲突'
 }
 def reject(state, record, code, detail):
     state['quarantine'].append({'line':record.get('_line',0),'id':record.get('id',''),
